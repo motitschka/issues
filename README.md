@@ -1,6 +1,6 @@
 # Geoguesser Sprintplan
 
-Timeline mit allen 45 Issues des HTL-Geoguesser-Projekts (4AHITM, HTL Villach): 6 Sprints vom 05.10. bis 21.12.2026, Abhängigkeiten, „Ohne zu warten“-Hinweise und Acceptance Criteria – zum Abhaken für alle drei Teammitglieder.
+Timeline mit allen Issues des HTL-Geoguesser-Projekts (4AHITM, HTL Villach): 6 Sprints vom 05.10. bis 21.12.2026, Abhängigkeiten, „Ohne zu warten“-Hinweise und Acceptance Criteria – zum Abhaken für alle drei Teammitglieder.
 
 ## Öffnen
 
