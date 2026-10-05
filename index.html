@@ -292,6 +292,24 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
 .create:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .create svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
 .issue-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.open-issue {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  padding: 6px 12px 6px 10px; border-radius: 99px; text-decoration: none;
+  font: 800 .84rem/1 var(--body); color: var(--blue); background: #fff; border: 2px solid var(--blue);
+  font-variant-numeric: tabular-nums; transition: background .2s var(--ease);
+}
+.open-issue:hover { background: var(--L-soft); }
+.open-issue svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 20px; background: var(--aqua-soft); }
+.seg button {
+  border: 0; cursor: pointer; border-radius: 99px; padding: 7px 12px; background: transparent;
+  font: 700 .86rem/1 var(--body); color: var(--ink-2); display: inline-flex; gap: 6px; align-items: center;
+}
+.seg button:hover:not(:disabled) { color: var(--blue); }
+.seg button[aria-pressed="true"] { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(15, 42, 92, .18); }
+.seg button:disabled { cursor: not-allowed; opacity: .55; }
+.seg .cnt { font-variant-numeric: tabular-nums; color: var(--ink-3); font-weight: 800; }
+.seg .cnt:empty { display: none; }
 .tool {
   display: inline-flex; align-items: center; cursor: pointer; text-decoration: none;
   font: 700 .84rem/1.2 var(--body); color: var(--blue); background: #fff;
@@ -425,6 +443,11 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     <div class="controls">
       <p class="filter-note" id="filter-note" aria-live="polite"></p>
       <p class="conn" id="conn-status" aria-live="polite"></p>
+      <div class="seg" id="gl-filter" role="group" aria-label="Nach GitLab-Status filtern">
+        <button type="button" data-gl="all">Alle</button>
+        <button type="button" data-gl="added">In GitLab <span class="cnt" id="cnt-added"></span></button>
+        <button type="button" data-gl="missing">Noch nicht angelegt <span class="cnt" id="cnt-missing"></span></button>
+      </div>
       <label class="switch"><input type="checkbox" id="hide-done"> Erledigte ausblenden</label>
     </div>
   </section>
@@ -518,8 +541,8 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   var prefs = (function () {
     try {
       var p = JSON.parse(readStore("localStorage", PREFS_KEY) || "{}");
-      return { filter: PEOPLE[p.filter] ? p.filter : "all", hideDone: !!p.hideDone };
-    } catch (e) { return { filter: "all", hideDone: false }; }
+      return { filter: PEOPLE[p.filter] ? p.filter : "all", hideDone: !!p.hideDone, gl: p.gl === "added" || p.gl === "missing" ? p.gl : "all" };
+    } catch (e) { return { filter: "all", hideDone: false, gl: "all" }; }
   })();
   function savePrefs() { writeStore("localStorage", PREFS_KEY, JSON.stringify(prefs)); }
   function getToken() { return readStore("sessionStorage", TOKEN_KEY) || readStore("localStorage", TOKEN_KEY); }
@@ -548,7 +571,12 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     if (err && err.status) return "GitLab hat mit Fehler " + err.status + " geantwortet. Später nochmal versuchen.";
     return "GitLab ist gerade nicht erreichbar. Internetverbindung prüfen.";
   }
+  /* The bulk import of 05.10. (#1–#45, #47, #48) does not count: issues are created one by one, shortly before the work. */
+  var IMPORTED = {};
+  for (var imp = 1; imp <= 45; imp++) IMPORTED[imp] = true;
+  IMPORTED[47] = IMPORTED[48] = true;
   function keep(issue) {
+    if (IMPORTED[issue.iid]) return;
     var cur = gl.byTitle[issue.title];
     if (!cur || cur.iid === issue.iid || issue.iid > cur.iid) gl.byTitle[issue.title] = issue;
   }
@@ -784,6 +812,11 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   hideDone.checked = prefs.hideDone;
   hideDone.addEventListener("change", function () { prefs.hideDone = hideDone.checked; savePrefs(); update(); });
 
+  var segButtons = Array.prototype.slice.call(document.querySelectorAll("#gl-filter button"));
+  segButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () { prefs.gl = btn.dataset.gl; savePrefs(); update(); });
+  });
+
   /* ---------- route ---------- */
   var routeEl = document.getElementById("route");
   var taskEls = {};
@@ -860,10 +893,6 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     var main = el("div");
     main.appendChild(el("h3", "task-title", iss.t));
     var meta = el("div", "meta");
-    var num = el("a", "num");
-    num.target = "_blank";
-    num.rel = "noopener";
-    meta.appendChild(num);
     meta.appendChild(el("span", "who", PEOPLE[iss.p].short));
     meta.appendChild(el("span", "weight", "Weight " + iss.w));
     var glState = el("span", "gl-state");
@@ -890,6 +919,11 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     create.appendChild(svg('<path d="M12 5v14M5 12h14"/>'));
     create.appendChild(document.createTextNode("Issue erstellen"));
     actions.appendChild(create);
+    var openLink = el("a", "open-issue");
+    openLink.target = "_blank";
+    openLink.rel = "noopener";
+    openLink.hidden = true;
+    actions.appendChild(openLink);
     actions.appendChild(more);
     li.appendChild(actions);
 
@@ -952,7 +986,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       detail.hidden = !open;
     });
 
-    var t = { li: li, lab: lab, input: input, num: num, glState: glState, depState: depState, acCount: acCount,
+    var t = { li: li, lab: lab, input: input, openLink: openLink, glState: glState, depState: depState, acCount: acCount,
       depLinks: depLinks, create: create, acList: acList, acHead: acHead, acKey: null, pending: false };
     taskEls[iss.id] = t;
 
@@ -1048,15 +1082,19 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       t.lab.title = !connected ? "Mit GitLab verbinden, um abzuhaken" : !g ? "Erst das Issue erstellen" : "";
       t.li.classList.toggle("is-done", done);
       t.li.classList.toggle("is-pending", t.pending);
-      t.li.hidden = (f !== "all" && iss.p !== f) || (prefs.hideDone && done);
+      var glf = connected ? prefs.gl : "all";
+      t.li.hidden = (f !== "all" && iss.p !== f) || (prefs.hideDone && done) ||
+        (glf === "added" && !g) || (glf === "missing" && !!g);
 
-      if (g) {
-        t.num.hidden = false;
-        t.num.textContent = "#" + g.iid;
-        t.num.href = g.web_url;
-        t.num.title = "Issue #" + g.iid + " in GitLab öffnen";
-      } else { t.num.hidden = true; }
       t.create.hidden = !!g;
+      t.openLink.hidden = !g;
+      if (g) {
+        t.openLink.textContent = "";
+        t.openLink.appendChild(svg('<path d="M14 5h5v5M19 5l-8 8M18 14v4a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4"/>'));
+        t.openLink.appendChild(document.createTextNode("#" + g.iid + " öffnen"));
+        t.openLink.href = g.web_url;
+        t.openLink.title = "Issue #" + g.iid + " in GitLab öffnen";
+      }
 
       t.glState.className = "gl-state";
       var doer = doerOf(g);
@@ -1102,7 +1140,11 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       s.pc.textContent = connected ? doneN + " / " + items.length + " erledigt" : items.length + " Issues";
       s.fill.style.width = items.length ? (doneN / items.length * 100) + "%" : "0%";
       s.empty.hidden = visible > 0;
-      s.empty.textContent = !items.length ? "Keine Issues für " + PEOPLE[f].short + " in diesem Sprint." : "Alle Issues in diesem Sprint sind erledigt.";
+      var glfs = connected ? prefs.gl : "all";
+      s.empty.textContent = !items.length ? "Keine Issues für " + PEOPLE[f].short + " in diesem Sprint."
+        : glfs === "added" ? "In diesem Sprint wurde noch kein Issue in GitLab angelegt."
+        : glfs === "missing" ? "Für alle Issues dieses Sprints gibt es schon ein GitLab-Issue."
+        : "Alle Issues in diesem Sprint sind erledigt.";
     });
 
     /* Person cards count what each person actually finished in GitLab, against what was planned for them. */
@@ -1133,6 +1175,16 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       e.count.appendChild(el("span", null, (connected ? dw + " / " : "") + pw + " Weight"));
       e.fill.style.width = connected && pw ? Math.min(100, dw / pw * 100) + "%" : "0%";
       e.btn.setAttribute("aria-pressed", String(f === p));
+    });
+
+    var addedN = connected ? ISSUES.filter(function (i) { return !!issueOf(i); }).length : 0;
+    document.getElementById("cnt-added").textContent = connected ? String(addedN) : "";
+    document.getElementById("cnt-missing").textContent = connected ? String(ISSUES.length - addedN) : "";
+    segButtons.forEach(function (btn) {
+      var on = (connected ? prefs.gl : "all") === btn.dataset.gl;
+      btn.setAttribute("aria-pressed", String(on));
+      btn.disabled = !connected && btn.dataset.gl !== "all";
+      btn.title = btn.disabled ? "Erst mit GitLab verbinden" : "";
     });
 
     var note = document.getElementById("filter-note");
