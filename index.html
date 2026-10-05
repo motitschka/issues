@@ -629,12 +629,11 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     if (err && err.status) return "GitLab hat mit Fehler " + err.status + " geantwortet. Später nochmal versuchen.";
     return "GitLab ist gerade nicht erreichbar. Internetverbindung prüfen.";
   }
-  /* The bulk import of 05.10. (#1–#45, #47, #48) does not count: issues are created one by one, shortly before the work. */
-  var IMPORTED = {};
-  for (var imp = 1; imp <= 45; imp++) IMPORTED[imp] = true;
-  IMPORTED[47] = IMPORTED[48] = true;
+  /* Issues up to #49 come from the setup and test phase on 05.10. and do not count:
+     issues are created one by one, shortly before the work. */
+  var IGNORE_UP_TO = 49;
   function keep(issue) {
-    if (IMPORTED[issue.iid]) return;
+    if (issue.iid <= IGNORE_UP_TO) return;
     var cur = gl.byTitle[issue.title];
     if (!cur || cur.iid === issue.iid || issue.iid > cur.iid) gl.byTitle[issue.title] = issue;
   }

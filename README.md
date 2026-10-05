@@ -23,7 +23,7 @@ Die Häkchen werden nicht im Browser gespeichert, sondern direkt in GitLab:
 - Die Seite zeigt, **wer was erledigt hat** (Assignee, sonst wer geschlossen hat), und zählt das pro Person auf den Team-Karten.
 - **Acceptance Criteria** kommen aus der Checkliste im Issue; Abhaken ändert die Beschreibung in GitLab.
 - Wird ein Issue über einen Merge Request mit `Closes #…` geschlossen, erscheint es hier automatisch als erledigt. Die Seite aktualisiert sich jede Minute.
-- Gibt es mehrere Issues mit demselben Titel, zählt das neueste. Der Sammel-Import vom 05.10. (#1–#45, #47, #48) wird ignoriert – es zählen nur Issues, die einzeln kurz vor der Arbeit angelegt wurden.
+- Gibt es mehrere Issues mit demselben Titel, zählt das neueste. Alle Issues bis #49 (Einrichtung und Tests am 05.10.) werden ignoriert – es zählen nur Issues, die danach einzeln kurz vor der Arbeit angelegt wurden.
 - Sobald ein Issue angelegt ist, wird aus „Issue erstellen“ ein Link „#… öffnen“. Der Filter **In GitLab / Noch nicht angelegt** zeigt, wofür es schon ein Issue gibt.
 
 **Verbinden:** Jede Person erstellt einmal einen eigenen [Personal Access Token](https://gitlab.com/-/user_settings/personal_access_tokens?name=Geoguesser%20Sprintplan&scopes=api) mit Scope `api` und Ablaufdatum spätestens 21.12.2026 und fügt ihn auf der Seite ein. Der Token bleibt im Browser und geht nur an gitlab.com; „Trennen“ löscht ihn. Ohne Token zeigt die Seite nur den Plan.
