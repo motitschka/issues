@@ -6,6 +6,7 @@ Timeline mit allen Issues des HTL-Geoguesser-Projekts (4AHITM, HTL Villach): 3 S
 
 - **Online:** https://motitschka.github.io/issues/
 - **Lokal:** `index.html` im Browser öffnen. Es wird nichts installiert.
+- **Als App auf dem iPhone:** Seite in Safari öffnen → Teilen → „Zum Home-Bildschirm“. Die App hat einen eigenen Speicher, der GitLab-Token muss dort einmal neu eingegeben werden.
 
 ## Issues erstellen
 
