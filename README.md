@@ -4,8 +4,8 @@ Timeline mit allen 45 Issues des HTL-Geoguesser-Projekts (4AHITM, HTL Villach): 
 
 ## Öffnen
 
+- **Online:** https://motitschka.github.io/issues/
 - **Lokal:** `index.html` im Browser öffnen. Es wird nichts installiert.
-- **Online:** unter *Settings → Pages* „Deploy from a branch“, Branch `main`, Ordner `/ (root)` wählen. GitHub Pages für private Repositories braucht GitHub Pro (für Schüler gratis über das GitHub Student Developer Pack).
 
 ## Häkchen
 
