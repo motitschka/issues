@@ -140,6 +140,41 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
 .switch input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(15, 42, 92, .3); transition: transform .3s var(--ease); }
 .switch input:checked { background: var(--turq); }
 .switch input:checked::after { transform: translateX(16px); }
+
+/* ---------- GitLab connection ---------- */
+.connect-card {
+  margin-top: 16px; padding: 20px 22px; background: var(--paper); border: 2px solid var(--line); border-radius: 26px; box-shadow: var(--shadow);
+  display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px 28px;
+}
+.connect-card h2 { font: 700 1.35rem/1.2 var(--display); color: var(--navy); margin: 0 0 6px; letter-spacing: -.03em; }
+.connect-card p, .connect-card li { color: var(--ink-2); font-size: .93rem; margin: 0; }
+.connect-card ol { margin: 10px 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.connect-card .fine { font-size: .85rem; color: var(--ink-3); }
+#connect-form { display: grid; gap: 8px; align-content: start; }
+#connect-form > label[for="token"] { font: 800 .85rem/1 var(--body); color: var(--ink-2); }
+#token { font: .95rem/1.2 var(--mono); padding: 11px 14px; border: 2px solid var(--line-strong); border-radius: 14px; background: var(--paper-2); color: var(--ink); width: 100%; }
+#token:focus-visible { outline: 3px solid var(--navy); outline-offset: 1px; }
+.remember { display: inline-flex; gap: 8px; align-items: center; font-size: .9rem; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+#connect-form .btn { justify-self: start; }
+.form-error { margin: 0; color: var(--danger); font-weight: 700; font-size: .9rem; }
+.conn { margin: 0; display: inline-flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; font-size: .9rem; color: var(--ink-2); }
+.conn-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 3px var(--mint-soft); flex: none; }
+.conn-dot.is-off { background: var(--line-strong); box-shadow: none; }
+.conn-dot.is-busy { background: var(--turq); animation: pulse 1s ease-in-out infinite; }
+.conn.is-error .conn-dot { background: var(--danger); box-shadow: none; }
+.link-btn { background: none; border: 0; padding: 0; color: var(--blue); font-weight: 800; cursor: pointer; text-decoration: underline; text-underline-offset: .18em; }
+.gl-state { font-weight: 800; }
+.gl-state.none { color: var(--ink-3); font-weight: 700; }
+.gl-state.open { color: var(--blue); }
+.gl-state.free { color: var(--ink-2); }
+.gl-state.closed { color: var(--ok); }
+.check input:disabled { cursor: not-allowed; }
+.check input:disabled + .box { background: var(--paper-2); border-style: dashed; }
+.check input:disabled:checked + .box { background: var(--c); border-style: solid; }
+.task.is-pending .box { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(.88); opacity: .55; } }
+@media (max-width: 760px) { .connect-card { grid-template-columns: 1fr; padding: 16px; border-radius: 22px; } }
+
 @media (max-width: 600px) { .controls { border-radius: 20px; } }
 
 /* ---------- Route timeline ---------- */
@@ -366,17 +401,6 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
 </head>
 <body>
 <canvas id="art" aria-hidden="true"></canvas>
-<div class="banner" id="banner" hidden>
-  <div class="wrap">
-    <p id="banner-text"></p>
-    <div class="actions">
-      <button class="btn primary" type="button" id="banner-merge">Zusammenführen</button>
-      <button class="btn" type="button" id="banner-replace">Ersetzen</button>
-      <button class="btn" type="button" id="banner-ignore">Ignorieren</button>
-    </div>
-  </div>
-</div>
-
 <header class="sign">
   <div class="wrap sign-row">
     <div>
@@ -392,7 +416,29 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     <div class="team-grid" id="team"></div>
     <div class="controls">
       <p class="filter-note" id="filter-note" aria-live="polite"></p>
+      <p class="conn" id="conn-status" aria-live="polite"></p>
       <label class="switch"><input type="checkbox" id="hide-done"> Erledigte ausblenden</label>
+    </div>
+  </section>
+
+  <section class="wrap" id="connect" aria-labelledby="connect-h" hidden>
+    <div class="connect-card">
+      <div>
+        <h2 id="connect-h">Mit GitLab verbinden</h2>
+        <p>Die Häkchen sind die GitLab-Issues: Abhaken schließt das Issue, und alle sehen, wer was erledigt hat. Dafür verbindet sich jede Person einmal mit dem eigenen GitLab-Zugang.</p>
+        <ol>
+          <li><a href="https://gitlab.com/-/user_settings/personal_access_tokens?name=Geoguesser%20Sprintplan&amp;scopes=api" target="_blank" rel="noopener">Personal Access Token in GitLab erstellen</a> – Scope <code>api</code>, Ablaufdatum spätestens 21.12.2026.</li>
+          <li>Token kopieren und hier einfügen.</li>
+        </ol>
+        <p class="fine">Der Token bleibt nur in deinem Browser und wird ausschließlich an gitlab.com geschickt. „Trennen“ löscht ihn wieder.</p>
+      </div>
+      <form id="connect-form" novalidate>
+        <label for="token">Personal Access Token</label>
+        <input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="glpat-…">
+        <label class="remember"><input type="checkbox" id="remember" checked> Auf diesem Gerät merken</label>
+        <button class="btn primary" type="submit">Verbinden</button>
+        <p class="form-error" id="connect-error" role="alert" hidden></p>
+      </form>
     </div>
   </section>
 
@@ -418,17 +464,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     </section>
 
     <footer class="foot">
-      <p id="storage-note">Häkchen werden nur in diesem Browser gespeichert. Mit „Stand teilen“ schickst du deinen Fortschritt als Link an das Team.</p>
-      <div class="actions">
-        <button class="btn primary" type="button" id="share">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
-          Stand teilen
-        </button>
-        <button class="btn danger" type="button" id="reset">Zurücksetzen</button>
-        <button class="btn danger" type="button" id="reset-yes" hidden>Ja, alle Häkchen löschen</button>
-        <button class="btn" type="button" id="reset-no" hidden>Abbrechen</button>
-      </div>
-      <input class="copy-field" id="copy-field" type="text" readonly hidden aria-label="Link zum geteilten Stand">
+      <p>Abhaken schließt das GitLab-Issue, Entfernen öffnet es wieder. Laut Projektregeln wird ein Issue normalerweise über den Merge Request mit <code>Closes #…</code> geschlossen – dann erscheint es hier automatisch als erledigt.</p>
     </footer>
   </div>
 </main>
@@ -448,6 +484,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     D: { name: "David Flaschberger", short: "David", role: "Frontend & Design" },
     M: { name: "Matei Novotny", short: "Matei", role: "Spiellogik & Content" }
   };
+  var GL_USERS = { riepanl2: "L", flaschd1: "D", novotnymatei: "M" };
   var SPRINTS = [
     { n: 1, from: "2026-10-05", to: "2026-10-18", name: "Fundament",
       note: "Projektgerüst und Datenverträge zuerst – danach arbeitet jeder gegen die Verträge und niemand wartet auf fremden Code." },
@@ -462,11 +499,130 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     { n: 6, from: "2026-12-14", to: "2026-12-21", name: "Abschluss",
       note: "Nur noch Fehlerbehebungen, dann das finale Release v1.0.0 und die Präsentation." }
   ];
-  var KEY = "geoguesser-sprintplan-v1";
   var GITLAB_PROJECT = "https://gitlab.com/htl-villach/it/classes/4ahitm-2026/itp/waent/project1/SJ26_27_4AHITM_ITPriepanl2_project1";
-  var GITLAB = GITLAB_PROJECT + "/-/issues/";
+  var API = "https://gitlab.com/api/v4";
+  var PROJECT = "/projects/86984037";
+  var PREFS_KEY = "geoguesser-sprintplan-prefs-v2";
+  var TOKEN_KEY = "geoguesser-gitlab-token";
   var LABELS = { docs: "documentation" };
-  /* Issue text as GitLab receives it; the quick actions at the end set label, sprint, weight and assignee on creation. */
+  var byId = {};
+  ISSUES.forEach(function (i) { byId[i.id] = i; });
+
+  /* ---------- browser storage: only preferences and the viewer's own token ---------- */
+  function readStore(store, key) { try { return window[store].getItem(key); } catch (e) { return null; } }
+  function writeStore(store, key, val) {
+    try { if (val == null) window[store].removeItem(key); else window[store].setItem(key, val); } catch (e) {}
+  }
+  var prefs = (function () {
+    try {
+      var p = JSON.parse(readStore("localStorage", PREFS_KEY) || "{}");
+      return { filter: PEOPLE[p.filter] ? p.filter : "all", hideDone: !!p.hideDone };
+    } catch (e) { return { filter: "all", hideDone: false }; }
+  })();
+  function savePrefs() { writeStore("localStorage", PREFS_KEY, JSON.stringify(prefs)); }
+  function getToken() { return readStore("sessionStorage", TOKEN_KEY) || readStore("localStorage", TOKEN_KEY); }
+  function setToken(tok, remember) {
+    writeStore("sessionStorage", TOKEN_KEY, null);
+    writeStore("localStorage", TOKEN_KEY, null);
+    if (tok) writeStore(remember ? "localStorage" : "sessionStorage", TOKEN_KEY, tok);
+  }
+
+  /* ---------- GitLab ---------- */
+  var gl = { token: getToken(), me: null, byTitle: {}, loaded: false, loading: false, error: "", at: null };
+
+  function api(method, path, body) {
+    var opts = { method: method, headers: { "PRIVATE-TOKEN": gl.token } };
+    if (body) { opts.headers["Content-Type"] = "application/json"; opts.body = JSON.stringify(body); }
+    return fetch(API + path, opts).then(function (r) {
+      if (r.ok) return r.json();
+      var err = new Error("HTTP " + r.status);
+      err.status = r.status;
+      throw err;
+    });
+  }
+  function errText(err) {
+    if (err && err.status === 401) return "Der Token ist ungültig oder abgelaufen.";
+    if (err && (err.status === 403 || err.status === 404)) return "Mit diesem Token gibt es keinen Zugriff auf das Projekt (Scope „api“ und Projektmitgliedschaft nötig).";
+    if (err && err.status) return "GitLab hat mit Fehler " + err.status + " geantwortet. Später nochmal versuchen.";
+    return "GitLab ist gerade nicht erreichbar. Internetverbindung prüfen.";
+  }
+  function keep(issue) {
+    var cur = gl.byTitle[issue.title];
+    if (!cur || cur.iid === issue.iid || issue.iid > cur.iid) gl.byTitle[issue.title] = issue;
+  }
+  function loadIssues() {
+    var all = [];
+    function page(n) {
+      return api("GET", PROJECT + "/issues?state=all&per_page=100&page=" + n).then(function (list) {
+        all = all.concat(list);
+        return list.length === 100 && n < 10 ? page(n + 1) : all;
+      });
+    }
+    return page(1);
+  }
+  function refresh() {
+    if (!gl.token || gl.loading) return Promise.resolve();
+    gl.loading = true;
+    renderConn();
+    return Promise.all([gl.me ? Promise.resolve(gl.me) : api("GET", "/user"), loadIssues()])
+      .then(function (res) {
+        gl.me = res[0];
+        gl.byTitle = {};
+        res[1].forEach(keep);
+        gl.loaded = true;
+        gl.error = "";
+        gl.at = new Date();
+      })
+      .catch(function (err) {
+        gl.error = errText(err);
+        if (err && err.status === 401) { setToken(null); gl.token = null; gl.me = null; gl.loaded = false; }
+      })
+      .then(function () { gl.loading = false; update(); renderConn(); });
+  }
+
+  /* ---------- helpers ---------- */
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function svg(markup) {
+    var s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "0 0 24 24");
+    s.setAttribute("aria-hidden", "true");
+    s.innerHTML = markup;
+    return s;
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function day(iso) { var p = iso.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function fmt(iso) { var d = day(iso); return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "."; }
+  function fmtDate(s) { var d = new Date(s); return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "."; }
+  var DAY = 86400000;
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  function sprintState(sp) {
+    if (today < day(sp.from)) return "future";
+    if (today > day(sp.to)) return "past";
+    return "now";
+  }
+  function issueOf(iss) { return gl.loaded ? gl.byTitle[iss.t] || null : null; }
+  function isDone(iss) { var g = issueOf(iss); return !!(g && g.state === "closed"); }
+  /* Who did it: the assignee (the person who took the issue); the closer only as fallback,
+     because a merge request is merged by the reviewer, not the author. */
+  function doerOf(g) {
+    if (!g) return null;
+    if (g.assignees && g.assignees.length) return g.assignees[0];
+    return g.closed_by || null;
+  }
+  function checklist(desc) {
+    var out = [];
+    (desc || "").split("\n").forEach(function (line) {
+      var m = line.match(/^\s*[-*] \[( |x|X)\] (.*)$/);
+      if (m) out.push({ done: m[1] !== " ", text: m[2] });
+    });
+    return out;
+  }
+
   function issueText(iss) {
     var deps = iss.deps.length ? iss.deps.map(function (d) { return byId[d].t; }).join(", ") : "keine";
     return "**Abhängig von:** " + deps + "  \n**Ohne Warten:** " + iss.how +
@@ -478,66 +634,15 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     return GITLAB_PROJECT + "/-/issues/new?issue%5Btitle%5D=" + encodeURIComponent(iss.t) +
       "&issue%5Bdescription%5D=" + encodeURIComponent(issueText(iss));
   }
-  function searchUrl(iss) {
-    return GITLAB_PROJECT + "/-/issues?state=all&search=" + encodeURIComponent(iss.t);
-  }
-  var byId = {};
-  ISSUES.forEach(function (i) { byId[i.id] = i; });
+  function searchUrl(iss) { return GITLAB_PROJECT + "/-/issues?state=all&search=" + encodeURIComponent(iss.t); }
 
-  /* ---------- state ---------- */
-  function emptyState() { return { done: {}, ac: {}, filter: "all", hideDone: false }; }
-  function load() {
-    try {
-      var raw = localStorage.getItem(KEY);
-      if (!raw) return emptyState();
-      var s = JSON.parse(raw);
-      var e = emptyState();
-      return {
-        done: s && typeof s.done === "object" && s.done ? s.done : e.done,
-        ac: s && typeof s.ac === "object" && s.ac ? s.ac : e.ac,
-        filter: s && PEOPLE[s.filter] ? s.filter : "all",
-        hideDone: !!(s && s.hideDone)
-      };
-    } catch (err) { return emptyState(); }
-  }
-  var storageOk = true;
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); }
-    catch (err) {
-      if (storageOk) {
-        storageOk = false;
-        document.getElementById("storage-note").textContent =
-          "Dieser Browser speichert gerade nichts (z. B. privates Fenster). Häkchen gehen beim Neuladen verloren – nutze „Stand teilen“, um sie zu sichern.";
-      }
-    }
-  }
-  var state = load();
-
-  /* ---------- helpers ---------- */
-  function el(tag, cls, text) {
-    var e = document.createElement(tag);
-    if (cls) e.className = cls;
-    if (text != null) e.textContent = text;
-    return e;
-  }
-  function svg(markup, cls) {
-    var s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    s.setAttribute("viewBox", "0 0 24 24");
-    s.setAttribute("aria-hidden", "true");
-    if (cls) s.setAttribute("class", cls);
-    s.innerHTML = markup;
-    return s;
-  }
-  function day(iso) { var p = iso.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
-  function fmt(iso) { var d = day(iso); return pad(d.getDate()) + "." + pad(d.getMonth() + 1) + "."; }
-  function pad(n) { return (n < 10 ? "0" : "") + n; }
-  var DAY = 86400000;
-  var today = new Date(); today.setHours(0, 0, 0, 0);
-
-  function sprintState(sp) {
-    if (today < day(sp.from)) return "future";
-    if (today > day(sp.to)) return "past";
-    return "now";
+  var toastEl = document.getElementById("toast");
+  var toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 3200);
   }
 
   var reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -568,23 +673,84 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   document.getElementById("meta-count").textContent = ISSUES.length + " Issues in 6 Sprints";
   (function () {
     var wd = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][today.getDay()];
-    var label = "Heute, " + wd + " " + pad(today.getDate()) + "." + pad(today.getMonth() + 1) + ".";
-    var sub = "";
+    var sub;
     var current = SPRINTS.filter(function (s) { return sprintState(s) === "now"; })[0];
     if (current) {
       var len = Math.round((day(current.to) - day(current.from)) / DAY) + 1;
-      var n = Math.round((today - day(current.from)) / DAY) + 1;
-      sub = "Sprint " + current.n + ", Tag " + n + " von " + len;
+      sub = "Sprint " + current.n + ", Tag " + (Math.round((today - day(current.from)) / DAY) + 1) + " von " + len;
     } else if (today < day(SPRINTS[0].from)) {
       sub = "Sprint 1 beginnt am " + fmt(SPRINTS[0].from);
     } else {
       sub = "Projektzeitraum beendet";
     }
     var t = document.getElementById("today-text");
-    t.textContent = label;
-    var small = el("small", null, sub);
-    t.appendChild(small);
+    t.textContent = "Heute, " + wd + " " + pad(today.getDate()) + "." + pad(today.getMonth() + 1) + ".";
+    t.appendChild(el("small", null, sub));
   })();
+
+  /* ---------- connect ---------- */
+  var connectSec = document.getElementById("connect");
+  var connForm = document.getElementById("connect-form");
+  var tokenInput = document.getElementById("token");
+  var rememberInput = document.getElementById("remember");
+  var connError = document.getElementById("connect-error");
+  var connStatus = document.getElementById("conn-status");
+  connForm.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var tok = tokenInput.value.trim();
+    if (!tok) { connError.textContent = "Bitte zuerst den Token einfügen."; connError.hidden = false; tokenInput.focus(); return; }
+    gl.token = tok;
+    gl.me = null;
+    connError.hidden = true;
+    refresh().then(function () {
+      if (gl.loaded && !gl.error) {
+        setToken(tok, rememberInput.checked);
+        tokenInput.value = "";
+        toast("Verbunden als " + (gl.me.name || gl.me.username) + ".");
+      } else {
+        gl.token = null;
+        connError.textContent = gl.error || "Verbindung fehlgeschlagen.";
+        connError.hidden = false;
+        renderConn();
+      }
+    });
+  });
+
+  function renderConn() {
+    var connected = !!(gl.token && gl.loaded);
+    connectSec.hidden = connected || gl.loading && !!gl.token;
+    connStatus.textContent = "";
+    connStatus.className = "conn";
+    if (gl.loading) {
+      connStatus.appendChild(el("span", "conn-dot is-busy"));
+      connStatus.appendChild(document.createTextNode("Lade Stand aus GitLab …"));
+      return;
+    }
+    if (!connected) {
+      if (gl.error) { connError.textContent = gl.error; connError.hidden = false; }
+      connStatus.appendChild(el("span", "conn-dot is-off"));
+      connStatus.appendChild(document.createTextNode("Nicht mit GitLab verbunden – nur Plan."));
+      return;
+    }
+    if (gl.error) connStatus.classList.add("is-error");
+    connStatus.appendChild(el("span", "conn-dot"));
+    var who = el("span", null, gl.error ? gl.error : "Verbunden als " + (gl.me.name || gl.me.username) +
+      " · Stand " + pad(gl.at.getHours()) + ":" + pad(gl.at.getMinutes()));
+    connStatus.appendChild(who);
+    var again = el("button", "link-btn", "Aktualisieren");
+    again.type = "button";
+    again.addEventListener("click", function () { refresh(); });
+    var off = el("button", "link-btn", "Trennen");
+    off.type = "button";
+    off.addEventListener("click", function () {
+      setToken(null);
+      gl.token = null; gl.me = null; gl.loaded = false; gl.byTitle = {}; gl.error = "";
+      update(); renderConn();
+      toast("Getrennt. Der Token ist aus diesem Browser gelöscht.");
+    });
+    connStatus.appendChild(again);
+    connStatus.appendChild(off);
+  }
 
   /* ---------- team ---------- */
   var teamEl = document.getElementById("team");
@@ -605,16 +771,16 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     prog.appendChild(count); prog.appendChild(bar);
     b.appendChild(prog);
     b.addEventListener("click", function () {
-      state.filter = state.filter === p ? "all" : p;
-      save(); update();
+      prefs.filter = prefs.filter === p ? "all" : p;
+      savePrefs(); update();
     });
     teamEl.appendChild(b);
     personEls[p] = { btn: b, count: count, fill: fill };
   });
 
   var hideDone = document.getElementById("hide-done");
-  hideDone.checked = state.hideDone;
-  hideDone.addEventListener("change", function () { state.hideDone = hideDone.checked; save(); update(); });
+  hideDone.checked = prefs.hideDone;
+  hideDone.addEventListener("change", function () { prefs.hideDone = hideDone.checked; savePrefs(); update(); });
 
   /* ---------- route ---------- */
   var routeEl = document.getElementById("route");
@@ -646,7 +812,6 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     li.id = "sprint-" + sp.n;
     var pl = el("span", "plaque", "S" + sp.n); pl.setAttribute("aria-hidden", "true");
     li.appendChild(pl);
-
     var head = el("div", "stop-head");
     var row = el("div", "stop-title");
     var h2 = el("h2", null, "Sprint " + sp.n + " ");
@@ -663,16 +828,13 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     prog.appendChild(bar); prog.appendChild(pc);
     head.appendChild(prog);
     li.appendChild(head);
-
     var list = el("ul", "tasks");
     var empty = el("li", "empty");
-    ISSUES.filter(function (i) { return i.s === sp.n; }).forEach(function (iss) {
-      list.appendChild(buildTask(iss));
-    });
+    ISSUES.filter(function (i) { return i.s === sp.n; }).forEach(function (iss) { list.appendChild(buildTask(iss)); });
     list.appendChild(empty);
     li.appendChild(list);
     routeEl.appendChild(li);
-    stopEls.push({ sp: sp, li: li, status: status, pc: pc, fill: fill, empty: empty, list: list });
+    stopEls.push({ sp: sp, li: li, status: status, pc: pc, fill: fill, empty: empty });
   });
 
   routeEl.appendChild(milestone("Ziel", "Projektende und Präsentation", "21.12.2026",
@@ -691,27 +853,19 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     var box = el("span", "box");
     box.appendChild(svg(CHECK));
     lab.appendChild(input); lab.appendChild(box);
-    if (iss.closed) input.disabled = true;
-    input.addEventListener("change", function () {
-      if (input.checked) state.done[iss.id] = true; else delete state.done[iss.id];
-      save(); update();
-      if (input.checked) splash(lab, getComputedStyle(li).getPropertyValue("--c").trim());
-    });
     li.appendChild(lab);
 
     var main = el("div");
     main.appendChild(el("h3", "task-title", iss.t));
     var meta = el("div", "meta");
-    if (iss.closed && iss.n) {
-      var num = el("a", "num", "#" + iss.n);
-      num.href = GITLAB + iss.n;
-      num.target = "_blank";
-      num.rel = "noopener";
-      num.title = "Issue #" + iss.n + " in GitLab öffnen";
-      meta.appendChild(num);
-    }
+    var num = el("a", "num");
+    num.target = "_blank";
+    num.rel = "noopener";
+    meta.appendChild(num);
     meta.appendChild(el("span", "who", PEOPLE[iss.p].short));
     meta.appendChild(el("span", "weight", "Weight " + iss.w));
+    var glState = el("span", "gl-state");
+    meta.appendChild(glState);
     var depState = el("span", "dep-state");
     meta.appendChild(depState);
     var acCount = el("span", "tnum");
@@ -726,16 +880,14 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     more.appendChild(document.createTextNode("Details"));
     more.appendChild(svg('<path d="M6 9l6 6 6-6"/>'));
     var actions = el("div", "row-actions");
-    if (!iss.closed) {
-      var create = el("a", "create");
-      create.href = newIssueUrl(iss);
-      create.target = "_blank";
-      create.rel = "noopener";
-      create.title = "Neues GitLab-Issue mit Titel, Beschreibung, Label, Sprint und Weight öffnen";
-      create.appendChild(svg('<path d="M12 5v14M5 12h14"/>'));
-      create.appendChild(document.createTextNode("Issue erstellen"));
-      actions.appendChild(create);
-    }
+    var create = el("a", "create");
+    create.href = newIssueUrl(iss);
+    create.target = "_blank";
+    create.rel = "noopener";
+    create.title = "Neues GitLab-Issue mit Titel, Beschreibung, Label, Sprint und Weight öffnen";
+    create.appendChild(svg('<path d="M12 5v14M5 12h14"/>'));
+    create.appendChild(document.createTextNode("Issue erstellen"));
+    actions.appendChild(create);
     actions.appendChild(more);
     li.appendChild(actions);
 
@@ -743,25 +895,23 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     detail.id = "d-" + iss.id;
     detail.hidden = true;
 
-    if (!iss.closed) {
-      var tools = el("div", "issue-tools");
-      var find = el("a", "tool", "Schon erstellt? In GitLab suchen");
-      find.href = searchUrl(iss);
-      find.target = "_blank";
-      find.rel = "noopener";
-      var copy = el("button", "tool", "Titel und Beschreibung kopieren");
-      copy.type = "button";
-      copy.addEventListener("click", function () {
-        var text = iss.t + "\n\n" + issueText(iss);
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(function () { toast("Kopiert. In GitLab bei „New item“ einfügen."); },
-            function () { toast("Kopieren nicht erlaubt – bitte „Issue erstellen“ nutzen."); });
-        } else { toast("Kopieren nicht möglich – bitte „Issue erstellen“ nutzen."); }
-      });
-      tools.appendChild(find);
-      tools.appendChild(copy);
-      detail.appendChild(tools);
-    }
+    var tools = el("div", "issue-tools");
+    var find = el("a", "tool", "Schon erstellt? In GitLab suchen");
+    find.href = searchUrl(iss);
+    find.target = "_blank";
+    find.rel = "noopener";
+    var copy = el("button", "tool", "Titel und Beschreibung kopieren");
+    copy.type = "button";
+    copy.addEventListener("click", function () {
+      var text = iss.t + "\n\n" + issueText(iss);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { toast("Kopiert. In GitLab bei „New item“ einfügen."); },
+          function () { toast("Kopieren nicht erlaubt – bitte „Issue erstellen“ nutzen."); });
+      } else { toast("Kopieren nicht möglich – bitte „Issue erstellen“ nutzen."); }
+    });
+    tools.appendChild(find);
+    tools.appendChild(copy);
+    detail.appendChild(tools);
 
     var depBox = el("div");
     depBox.appendChild(el("h4", null, "Abhängig von"));
@@ -771,7 +921,6 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     iss.deps.forEach(function (d) {
       var a = el("a", "dep");
       a.href = "#i-" + d;
-      a.dataset.dep = d;
       var icon = svg("");
       a.appendChild(icon);
       a.appendChild(document.createTextNode(byId[d].t));
@@ -788,27 +937,10 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     detail.appendChild(tipBox);
 
     var acBox = el("div");
-    acBox.appendChild(el("h4", null, "Acceptance Criteria"));
-    var ul = el("ul", "ac");
-    var acInputs = [];
-    iss.ac.forEach(function (text, idx) {
-      var item = el("li");
-      var l = el("label");
-      var cb = el("input");
-      cb.type = "checkbox";
-      cb.id = "ac-" + iss.id + "-" + idx;
-      cb.addEventListener("change", function () {
-        var k = iss.id + "." + idx;
-        if (cb.checked) state.ac[k] = true; else delete state.ac[k];
-        save(); update();
-      });
-      l.appendChild(cb);
-      l.appendChild(el("span", null, text));
-      item.appendChild(l);
-      ul.appendChild(item);
-      acInputs.push(cb);
-    });
-    acBox.appendChild(ul);
+    var acHead = el("h4", null, "Acceptance Criteria");
+    acBox.appendChild(acHead);
+    var acList = el("ul", "ac");
+    acBox.appendChild(acList);
     detail.appendChild(acBox);
     li.appendChild(detail);
 
@@ -818,59 +950,146 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       detail.hidden = !open;
     });
 
-    taskEls[iss.id] = { li: li, input: input, depState: depState, acCount: acCount, depLinks: depLinks, acInputs: acInputs, more: more, detail: detail };
+    var t = { li: li, lab: lab, input: input, num: num, glState: glState, depState: depState, acCount: acCount,
+      depLinks: depLinks, create: create, acList: acList, acHead: acHead, acKey: null, pending: false };
+    taskEls[iss.id] = t;
+
+    input.addEventListener("change", function () {
+      var g = issueOf(iss);
+      if (!g || t.pending) { input.checked = isDone(iss); return; }
+      var closing = input.checked;
+      var body = { state_event: closing ? "close" : "reopen" };
+      if (closing && (!g.assignees || !g.assignees.length) && gl.me) body.assignee_ids = [gl.me.id];
+      if (closing) splash(lab, getComputedStyle(li).getPropertyValue("--c").trim());
+      t.pending = true;
+      update();
+      api("PUT", PROJECT + "/issues/" + g.iid, body)
+        .then(function (res) { keep(res); toast("#" + res.iid + (closing ? " geschlossen." : " wieder geöffnet.")); })
+        .catch(function (err) { toast(errText(err)); })
+        .then(function () { t.pending = false; update(); });
+    });
     return li;
+  }
+
+  function renderAc(iss, t, g) {
+    var items = g ? checklist(g.description) : iss.ac.map(function (a) { return { done: false, text: a }; });
+    var key = (g ? g.iid + ":" + g.updated_at : "plan") + ":" + (gl.token && gl.loaded ? 1 : 0) + ":" + t.pending;
+    if (t.acKey === key) return items;
+    t.acKey = key;
+    t.acHead.textContent = g ? "Acceptance Criteria (aus GitLab #" + g.iid + ")" : "Acceptance Criteria";
+    t.acList.textContent = "";
+    if (g && !items.length) {
+      t.acList.appendChild(el("li", "none", "Im GitLab-Issue steht keine Checkliste."));
+      return items;
+    }
+    items.forEach(function (item, idx) {
+      var row = el("li");
+      var l = el("label");
+      var cb = el("input");
+      cb.type = "checkbox";
+      cb.id = "ac-" + iss.id + "-" + idx;
+      cb.checked = item.done;
+      cb.disabled = !g || t.pending;
+      cb.addEventListener("change", function () { toggleAc(iss, idx, cb.checked); });
+      l.appendChild(cb);
+      l.appendChild(el("span", null, item.text));
+      row.appendChild(l);
+      t.acList.appendChild(row);
+    });
+    return items;
+  }
+
+  function toggleAc(iss, idx, checked) {
+    var g = issueOf(iss), t = taskEls[iss.id];
+    if (!g) return;
+    t.pending = true;
+    update();
+    api("GET", PROJECT + "/issues/" + g.iid)
+      .then(function (fresh) {
+        var lines = (fresh.description || "").split("\n"), k = -1;
+        for (var i = 0; i < lines.length; i++) {
+          if (/^\s*[-*] \[( |x|X)\] /.test(lines[i]) && ++k === idx) {
+            lines[i] = lines[i].replace(/\[( |x|X)\]/, checked ? "[x]" : "[ ]");
+            break;
+          }
+        }
+        return api("PUT", PROJECT + "/issues/" + g.iid, { description: lines.join("\n") });
+      })
+      .then(function (res) { keep(res); })
+      .catch(function (err) { toast(errText(err)); })
+      .then(function () { t.pending = false; update(); });
   }
 
   function jumpTo(id) {
     var iss = byId[id];
-    if (state.filter !== "all" && state.filter !== iss.p) { state.filter = "all"; save(); }
-    if (state.hideDone && state.done[id]) { state.hideDone = false; hideDone.checked = false; save(); }
+    if (prefs.filter !== "all" && prefs.filter !== iss.p) { prefs.filter = "all"; savePrefs(); }
+    if (prefs.hideDone && isDone(iss)) { prefs.hideDone = false; hideDone.checked = false; savePrefs(); }
     update();
     var t = taskEls[id];
-    t.li.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    t.li.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
     t.li.classList.add("flash");
     setTimeout(function () { t.li.classList.remove("flash"); }, 1400);
     t.input.focus({ preventScroll: true });
   }
 
-  /* ---------- render state ---------- */
+  /* ---------- render ---------- */
   function update() {
-    var f = state.filter;
+    var f = prefs.filter;
+    var connected = !!(gl.token && gl.loaded);
 
     ISSUES.forEach(function (iss) {
       var t = taskEls[iss.id];
-      var done = !!iss.closed || !!state.done[iss.id];
+      var g = issueOf(iss);
+      var done = isDone(iss);
       t.input.checked = done;
+      t.input.disabled = !g || t.pending;
+      t.lab.title = !connected ? "Mit GitLab verbinden, um abzuhaken" : !g ? "Erst das Issue erstellen" : "";
       t.li.classList.toggle("is-done", done);
-      t.li.hidden = (f !== "all" && iss.p !== f) || (state.hideDone && done);
-      t.li.classList.toggle("is-closed", !!iss.closed);
+      t.li.classList.toggle("is-pending", t.pending);
+      t.li.hidden = (f !== "all" && iss.p !== f) || (prefs.hideDone && done);
+
+      if (g) {
+        t.num.hidden = false;
+        t.num.textContent = "#" + g.iid;
+        t.num.href = g.web_url;
+        t.num.title = "Issue #" + g.iid + " in GitLab öffnen";
+      } else { t.num.hidden = true; }
+      t.create.hidden = !!g;
+
+      t.glState.className = "gl-state";
+      var doer = doerOf(g);
+      if (!connected) { t.glState.textContent = ""; t.glState.hidden = true; }
+      else {
+        t.glState.hidden = false;
+        if (!g) { t.glState.textContent = "Noch kein Issue"; t.glState.classList.add("none"); }
+        else if (done) { t.glState.textContent = "Erledigt von " + (doer ? doer.name : "?") + (g.closed_at ? ", " + fmtDate(g.closed_at) : ""); t.glState.classList.add("closed"); }
+        else if (g.assignees && g.assignees.length) { t.glState.textContent = "In Arbeit: " + g.assignees[0].name; t.glState.classList.add("open"); }
+        else { t.glState.textContent = "Offen, nicht zugewiesen"; t.glState.classList.add("free"); }
+      }
 
       var open = 0;
       t.depLinks.forEach(function (d) {
-        var dd = !!byId[d.id].closed || !!state.done[d.id];
+        var dd = isDone(byId[d.id]);
         if (!dd) open++;
         d.a.classList.toggle("is-done", dd);
         d.a.classList.toggle("is-open", !dd);
         d.icon.innerHTML = dd ? LINK_DONE : LINK_OPEN;
       });
-      if (done) { t.depState.className = "dep-state done"; t.depState.textContent = iss.closed ? "In GitLab geschlossen" : "Erledigt"; }
-      else if (open) { t.depState.className = "dep-state waiting"; t.depState.textContent = open === 1 ? "1 Abhängigkeit offen" : open + " Abhängigkeiten offen"; }
-      else { t.depState.className = "dep-state ready"; t.depState.textContent = "Startklar"; }
+      if (done) { t.depState.hidden = true; }
+      else {
+        t.depState.hidden = false;
+        if (open) { t.depState.className = "dep-state waiting"; t.depState.textContent = open === 1 ? "1 Abhängigkeit offen" : open + " Abhängigkeiten offen"; }
+        else { t.depState.className = "dep-state ready"; t.depState.textContent = "Startklar"; }
+      }
 
-      var acDone = 0;
-      t.acInputs.forEach(function (cb, idx) {
-        var c = !!iss.closed || !!state.ac[iss.id + "." + idx];
-        cb.checked = c;
-        cb.disabled = !!iss.closed;
-        if (c) acDone++;
-      });
-      t.acCount.textContent = acDone + "/" + iss.ac.length + " Kriterien";
+      var items = renderAc(iss, t, g);
+      var acDone = items.filter(function (i) { return i.done; }).length;
+      t.acCount.textContent = g ? acDone + "/" + items.length + " Kriterien" : iss.ac.length + " Kriterien";
     });
 
     stopEls.forEach(function (s) {
       var items = ISSUES.filter(function (i) { return i.s === s.sp.n && (f === "all" || i.p === f); });
-      var doneN = items.filter(function (i) { return i.closed || state.done[i.id]; }).length;
+      var doneN = items.filter(isDone).length;
       var visible = items.filter(function (i) { return !taskEls[i.id].li.hidden; }).length;
       var complete = items.length > 0 && doneN === items.length;
       var when = sprintState(s.sp);
@@ -878,134 +1097,62 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       s.li.classList.toggle("is-now", !complete && when === "now");
       s.li.classList.toggle("is-future", !complete && when === "future");
       s.status.textContent = complete ? "Erledigt" : when === "now" ? "Läuft gerade" : when === "past" ? "Überfällig" : "Geplant";
-      s.pc.textContent = doneN + " / " + items.length + " erledigt";
+      s.pc.textContent = connected ? doneN + " / " + items.length + " erledigt" : items.length + " Issues";
       s.fill.style.width = items.length ? (doneN / items.length * 100) + "%" : "0%";
       s.empty.hidden = visible > 0;
-      s.empty.textContent = !items.length
-        ? "Keine Issues für " + PEOPLE[f].short + " in diesem Sprint."
-        : "Alle Issues in diesem Sprint sind erledigt.";
+      s.empty.textContent = !items.length ? "Keine Issues für " + PEOPLE[f].short + " in diesem Sprint." : "Alle Issues in diesem Sprint sind erledigt.";
     });
 
+    /* Person cards count what each person actually finished in GitLab, against what was planned for them. */
+    var doneBy = { L: [], D: [], M: [] };
+    if (connected) {
+      ISSUES.forEach(function (iss) {
+        var g = issueOf(iss);
+        if (!g || g.state !== "closed") return;
+        var doer = doerOf(g), p = doer && GL_USERS[doer.username];
+        if (p) doneBy[p].push(iss);
+      });
+    }
     Object.keys(PEOPLE).forEach(function (p) {
-      var mine = ISSUES.filter(function (i) { return i.p === p; });
-      var d = mine.filter(function (i) { return i.closed || state.done[i.id]; });
-      var w = mine.reduce(function (a, i) { return a + i.w; }, 0);
-      var wd = d.reduce(function (a, i) { return a + i.w; }, 0);
+      var planned = ISSUES.filter(function (i) { return i.p === p; });
+      var pw = planned.reduce(function (a, i) { return a + i.w; }, 0);
+      var dw = doneBy[p].reduce(function (a, i) { return a + i.w; }, 0);
       var e = personEls[p];
-      e.count.innerHTML = "";
+      e.count.textContent = "";
       var left = el("span");
-      left.appendChild(el("b", null, d.length + " / " + mine.length));
-      left.appendChild(document.createTextNode(" Issues"));
+      if (connected) {
+        left.appendChild(el("b", null, String(doneBy[p].length)));
+        left.appendChild(document.createTextNode(" erledigt"));
+      } else {
+        left.appendChild(el("b", null, String(planned.length)));
+        left.appendChild(document.createTextNode(" geplant"));
+      }
       e.count.appendChild(left);
-      var right = el("span", null, wd + " / " + w + " Weight");
-      e.count.appendChild(right);
-      e.fill.style.width = w ? (wd / w * 100) + "%" : "0%";
+      e.count.appendChild(el("span", null, (connected ? dw + " / " : "") + pw + " Weight"));
+      e.fill.style.width = connected && pw ? Math.min(100, dw / pw * 100) + "%" : "0%";
       e.btn.setAttribute("aria-pressed", String(f === p));
     });
 
     var note = document.getElementById("filter-note");
     note.textContent = "";
     if (f === "all") {
-      note.textContent = "Alle Issues. Tippe auf eine Person, um nur ihre Aufgaben zu sehen.";
+      note.textContent = "Alle Issues. Tippe auf eine Person, um nur ihren Plan zu sehen.";
     } else {
-      note.appendChild(document.createTextNode("Nur Issues von " + PEOPLE[f].name + ". "));
-      var all = el("button", null, "Alle anzeigen");
+      note.appendChild(document.createTextNode("Geplant für " + PEOPLE[f].name + ". "));
+      var all = el("button", "link-btn", "Alle anzeigen");
       all.type = "button";
-      all.addEventListener("click", function () { state.filter = "all"; save(); update(); });
+      all.addEventListener("click", function () { prefs.filter = "all"; savePrefs(); update(); });
       note.appendChild(all);
     }
   }
 
-  /* ---------- share ---------- */
-  var toastEl = document.getElementById("toast");
-  var toastTimer;
-  function toast(msg) {
-    toastEl.textContent = msg;
-    toastEl.classList.add("show");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2600);
-  }
-  function encodeState() {
-    var d = Object.keys(state.done).filter(function (k) { return byId[k]; });
-    var a = Object.keys(state.ac).filter(function (k) { return byId[k.split(".")[0]]; });
-    var raw = d.join(",") + "|" + a.join(",");
-    return btoa(unescape(encodeURIComponent(raw))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  }
-  function decodeState(str) {
-    try {
-      var b = str.replace(/-/g, "+").replace(/_/g, "/");
-      while (b.length % 4) b += "=";
-      var raw = decodeURIComponent(escape(atob(b)));
-      var parts = raw.split("|");
-      var done = {}, ac = {};
-      (parts[0] || "").split(",").forEach(function (k) { if (byId[k]) done[k] = true; });
-      (parts[1] || "").split(",").forEach(function (k) {
-        var p = k.split("."); var iss = byId[p[0]];
-        if (iss && +p[1] >= 0 && +p[1] < iss.ac.length) ac[k] = true;
-      });
-      return { done: done, ac: ac };
-    } catch (err) { return null; }
-  }
-  var copyField = document.getElementById("copy-field");
-  document.getElementById("share").addEventListener("click", function () {
-    var url = location.href.split("#")[0] + "#stand=" + encodeState();
-    function fallback() {
-      copyField.hidden = false;
-      copyField.value = url;
-      copyField.focus();
-      copyField.select();
-      toast("Link markiert – jetzt kopieren und ans Team schicken.");
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () {
-        copyField.hidden = true;
-        toast("Link kopiert. Schick ihn ans Team.");
-      }, fallback);
-    } else { fallback(); }
-  });
-
-  var resetBtn = document.getElementById("reset");
-  var resetYes = document.getElementById("reset-yes");
-  var resetNo = document.getElementById("reset-no");
-  function resetMode(on) { resetBtn.hidden = on; resetYes.hidden = !on; resetNo.hidden = !on; }
-  resetBtn.addEventListener("click", function () { resetMode(true); resetYes.focus(); });
-  resetNo.addEventListener("click", function () { resetMode(false); resetBtn.focus(); });
-  resetYes.addEventListener("click", function () {
-    state.done = {}; state.ac = {};
-    save(); update(); resetMode(false);
-    toast("Alle Häkchen gelöscht.");
-  });
-
-  var banner = document.getElementById("banner");
-  var incoming = null;
-  var m = location.hash.match(/^#stand=([A-Za-z0-9_-]*)$/);
-  if (m) {
-    incoming = decodeState(m[1]);
-    if (incoming) {
-      var n = Object.keys(incoming.done).length;
-      document.getElementById("banner-text").textContent =
-        "Geteilter Stand mit " + n + (n === 1 ? " erledigtem Issue" : " erledigten Issues") +
-        ". Zusammenführen ergänzt deine Häkchen, Ersetzen übernimmt nur den geteilten Stand.";
-      banner.hidden = false;
-    }
-  }
-  function closeBanner() {
-    banner.hidden = true;
-    incoming = null;
-    try { history.replaceState(null, "", location.pathname + location.search); } catch (err) {}
-  }
-  document.getElementById("banner-merge").addEventListener("click", function () {
-    Object.keys(incoming.done).forEach(function (k) { state.done[k] = true; });
-    Object.keys(incoming.ac).forEach(function (k) { state.ac[k] = true; });
-    save(); update(); closeBanner(); toast("Stand zusammengeführt.");
-  });
-  document.getElementById("banner-replace").addEventListener("click", function () {
-    state.done = incoming.done; state.ac = incoming.ac;
-    save(); update(); closeBanner(); toast("Geteilter Stand übernommen.");
-  });
-  document.getElementById("banner-ignore").addEventListener("click", closeBanner);
-
   update();
+  renderConn();
+  if (gl.token) refresh();
+  setInterval(function () { if (gl.token && document.visibilityState === "visible") refresh(); }, 60000);
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && gl.token && gl.at && Date.now() - gl.at > 20000) refresh();
+  });
 })();
 </script>
 <script>

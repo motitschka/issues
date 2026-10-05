@@ -14,11 +14,17 @@ Issues werden erst kurz vor der Arbeit angelegt. **Issue erstellen** öffnet in 
 - **Schon erstellt? In GitLab suchen** prüft vorher, ob es das Issue bereits gibt.
 - **Titel und Beschreibung kopieren** ist der Ausweg, falls GitLab die Felder nicht vorausfüllt.
 
-## Häkchen
+## Häkchen = GitLab-Issues
 
-- Werden im Browser gespeichert (`localStorage`), also pro Person und Gerät.
-- **Stand teilen** kopiert einen Link mit deinem Fortschritt. Wer ihn öffnet, kann ihn mit dem eigenen Stand **zusammenführen** oder ihn **ersetzen**.
-- **Zurücksetzen** löscht alle Häkchen in diesem Browser.
+Die Häkchen werden nicht im Browser gespeichert, sondern direkt in GitLab:
+
+- **Abhaken** schließt das passende GitLab-Issue (Zuordnung über den Titel), **Entfernen** öffnet es wieder. Ist niemand zugewiesen, wirst du beim Abhaken zugewiesen.
+- Die Seite zeigt, **wer was erledigt hat** (Assignee, sonst wer geschlossen hat), und zählt das pro Person auf den Team-Karten.
+- **Acceptance Criteria** kommen aus der Checkliste im Issue; Abhaken ändert die Beschreibung in GitLab.
+- Wird ein Issue über einen Merge Request mit `Closes #…` geschlossen, erscheint es hier automatisch als erledigt. Die Seite aktualisiert sich jede Minute.
+- Gibt es mehrere Issues mit demselben Titel, zählt das neueste.
+
+**Verbinden:** Jede Person erstellt einmal einen eigenen [Personal Access Token](https://gitlab.com/-/user_settings/personal_access_tokens?name=Geoguesser%20Sprintplan&scopes=api) mit Scope `api` und Ablaufdatum spätestens 21.12.2026 und fügt ihn auf der Seite ein. Der Token bleibt im Browser und geht nur an gitlab.com; „Trennen“ löscht ihn. Ohne Token zeigt die Seite nur den Plan.
 
 ## Inhalt ändern
 
