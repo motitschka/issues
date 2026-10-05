@@ -292,6 +292,29 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
 .create:hover { filter: brightness(1.05); transform: translateY(-1px); }
 .create svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
 .issue-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.tool.danger { color: var(--danger); }
+.tool.danger:hover { border-color: var(--danger); }
+.tool:disabled { opacity: .6; cursor: progress; }
+.extra-badge { font: 800 .7rem/1 var(--body); text-transform: uppercase; letter-spacing: .07em; color: var(--ink); background: var(--mint-soft); border: 1px solid var(--mint); padding: 4px 8px; border-radius: 99px; }
+.new-task-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-top: 16px; }
+.new-task-bar .hint { font: 700 .9rem/1.3 var(--body); color: var(--ink); text-shadow: var(--halo); }
+.new-task {
+  margin-top: 12px; padding: 20px 22px; background: var(--paper); border: 2px solid var(--line); border-radius: 26px; box-shadow: var(--shadow);
+  display: grid; gap: 14px;
+}
+.new-task h2 { font: 700 1.35rem/1.2 var(--display); color: var(--navy); margin: 0; letter-spacing: -.03em; }
+.nt-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 14px; }
+.nt-grid label { display: grid; gap: 6px; align-content: start; font: 800 .85rem/1.2 var(--body); color: var(--ink-2); }
+.nt-grid label small { font-weight: 600; color: var(--ink-3); margin-left: .4em; }
+.nt-grid .full { grid-column: 1 / -1; }
+.nt-grid input, .nt-grid textarea, .nt-grid select {
+  font: 400 .95rem/1.4 var(--body); color: var(--ink); background: var(--paper-2);
+  border: 2px solid var(--line-strong); border-radius: 14px; padding: 9px 12px; width: 100%;
+}
+.nt-grid textarea { resize: vertical; min-height: 72px; }
+.nt-grid input:focus-visible, .nt-grid textarea:focus-visible, .nt-grid select:focus-visible { outline: 3px solid var(--navy); outline-offset: 1px; }
+.new-task .fine { margin: 0; font-size: .85rem; color: var(--ink-3); max-width: 80ch; }
+@media (max-width: 700px) { .nt-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .new-task { padding: 16px; border-radius: 22px; } }
 .open-issue {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
   padding: 6px 12px 6px 10px; border-radius: 99px; text-decoration: none;
@@ -397,7 +420,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
 
 .toast {
   position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 16px);
-  background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 999px;
+  background: var(--navy); color: #fff; padding: 11px 18px; border-radius: 18px; text-align: center;
   font: 800 .92rem/1.2 var(--body); opacity: 0; pointer-events: none;
   box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--mint), var(--shadow);
   transition: opacity .25s var(--ease), transform .4s var(--ease); max-width: calc(100% - 32px);
@@ -473,6 +496,35 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     </div>
   </section>
 
+  <section class="wrap" aria-label="Neue Aufgabe">
+    <div class="new-task-bar">
+      <button class="btn primary" type="button" id="nt-open" aria-expanded="false" aria-controls="new-task">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Neue Aufgabe
+      </button>
+      <span class="hint">Für Bugs und Aufgaben, die nicht im Plan stehen.</span>
+    </div>
+    <form class="new-task" id="new-task" hidden novalidate>
+      <h2>Neue Aufgabe</h2>
+      <div class="nt-grid">
+        <label class="full" for="nt-title">Titel <input id="nt-title" maxlength="200" autocomplete="off" placeholder="z. B. Bug: Timer läuft nach Rundenende weiter"></label>
+        <label class="full" for="nt-desc">Beschreibung <textarea id="nt-desc" rows="3" maxlength="2000" placeholder="Was soll passieren, was passiert stattdessen?"></textarea></label>
+        <label class="full" for="nt-ac">Acceptance Criteria <small>eine pro Zeile</small><textarea id="nt-ac" rows="3" placeholder="Timer stoppt beim Rundenende&#10;Unit-Test für den Fall vorhanden"></textarea></label>
+        <label for="nt-sprint">Sprint <select id="nt-sprint"></select></label>
+        <label for="nt-person">Für <select id="nt-person"></select></label>
+        <label for="nt-label">Label <select id="nt-label"></select></label>
+        <label for="nt-weight">Weight <select id="nt-weight"></select></label>
+      </div>
+      <p class="form-error" id="nt-error" role="alert" hidden></p>
+      <div class="actions">
+        <button class="btn primary" type="submit" id="nt-save">Zum Plan hinzufügen</button>
+        <button class="btn" type="button" id="nt-gitlab">Nur in GitLab erstellen</button>
+        <button class="btn" type="button" id="nt-cancel">Abbrechen</button>
+      </div>
+      <p class="fine">„Zum Plan hinzufügen“ speichert die Aufgabe für alle auf der GitLab-Wiki-Seite <a id="nt-wiki" target="_blank" rel="noopener">Sprintplan-Zusatzaufgaben</a>; das GitLab-Issue legst du wie gewohnt mit „Issue erstellen“ an, wenn du anfängst.</p>
+    </form>
+  </section>
+
   <div class="wrap">
     <ol class="route" id="route"></ol>
 
@@ -532,6 +584,12 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   var LABELS = { docs: "documentation" };
   var byId = {};
   ISSUES.forEach(function (i) { byId[i.id] = i; });
+  /* Extra tasks added on the page live on a GitLab wiki page, so the whole team sees them. */
+  var CUSTOM = [];
+  var WIKI_SLUG = "Sprintplan-Zusatzaufgaben";
+  var LABEL_CHOICES = ["frontend", "backend", "game-logic", "content", "devops", "testing", "documentation", "projektleitung", "bug"];
+  var WEIGHTS = [1, 2, 3, 5, 8];
+  function tasks() { return ISSUES.concat(CUSTOM); }
 
   /* ---------- browser storage: only preferences and the viewer's own token ---------- */
   function readStore(store, key) { try { return window[store].getItem(key); } catch (e) { return null; } }
@@ -580,6 +638,68 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     var cur = gl.byTitle[issue.title];
     if (!cur || cur.iid === issue.iid || issue.iid > cur.iid) gl.byTitle[issue.title] = issue;
   }
+  function parseCustom(content) {
+    var blocks = (content || "").match(/```json\n[\s\S]*?\n```/g);
+    if (!blocks) return [];
+    var data;
+    try { data = JSON.parse(blocks[blocks.length - 1].replace(/^```json\n/, "").replace(/\n```$/, "")); } catch (e) { return []; }
+    if (!Array.isArray(data)) return [];
+    return data.filter(function (x) {
+      return x && typeof x.id === "string" && /^x-[a-z0-9]{4,24}$/.test(x.id) && typeof x.t === "string" && x.t.trim() &&
+        PEOPLE[x.p] && [1, 2, 3].indexOf(x.s) >= 0;
+    }).map(function (x) {
+      return {
+        id: x.id, custom: true, p: x.p, s: x.s, t: x.t.trim().slice(0, 200),
+        label: LABEL_CHOICES.indexOf(x.label) >= 0 ? x.label : "",
+        w: WEIGHTS.indexOf(x.w) >= 0 ? x.w : 2,
+        how: typeof x.how === "string" ? x.how.slice(0, 2000) : "",
+        ac: Array.isArray(x.ac) ? x.ac.filter(function (a) { return typeof a === "string" && a.trim(); }).slice(0, 20).map(function (a) { return a.trim().slice(0, 300); }) : [],
+        deps: [], by: typeof x.by === "string" ? x.by.slice(0, 60) : "", at: typeof x.at === "string" ? x.at.slice(0, 40) : ""
+      };
+    });
+  }
+  function wikiContent(list) {
+    function cell(s) { return String(s).replace(/\|/g, "\\|").replace(/\s+/g, " "); }
+    var rows = list.map(function (i) {
+      return "| " + i.s + " | " + cell(i.t) + " | " + PEOPLE[i.p].short + " | " + i.w + " | " + cell(i.by || "") + " |";
+    });
+    return "Diese Seite wird von der Sprintplan-Webseite gepflegt (https://motitschka.github.io/issues/). Bitte Aufgaben nur dort hinzufügen oder entfernen.\n\n" +
+      "| Sprint | Aufgabe | Für | Weight | Angelegt von |\n|---|---|---|---|---|\n" + (rows.length ? rows.join("\n") : "| – | Noch keine Zusatzaufgaben | | | |") +
+      "\n\n```json\n" + JSON.stringify(list.map(function (i) {
+        return { id: i.id, t: i.t, p: i.p, s: i.s, label: i.label, w: i.w, how: i.how, ac: i.ac, by: i.by, at: i.at };
+      }), null, 2) + "\n```\n";
+  }
+  function loadCustom() {
+    return api("GET", PROJECT + "/wikis/" + WIKI_SLUG).then(
+      function (page) { return parseCustom(page.content); },
+      function (err) { return err && err.status === 404 ? [] : null; });
+  }
+  /* Read the newest list right before writing, so two people adding at once do not overwrite each other. */
+  function saveCustom(mutate) {
+    return api("GET", PROJECT + "/wikis/" + WIKI_SLUG).then(
+      function (page) { return { exists: true, list: parseCustom(page.content) }; },
+      function (err) { if (err && err.status === 404) return { exists: false, list: [] }; throw err; })
+      .then(function (cur) {
+        var list = mutate(cur.list);
+        var body = { title: WIKI_SLUG, content: wikiContent(list), format: "markdown" };
+        return (cur.exists ? api("PUT", PROJECT + "/wikis/" + WIKI_SLUG, body) : api("POST", PROJECT + "/wikis", body))
+          .then(function () { setCustom(list); update(); return list; });
+      });
+  }
+  function setCustom(list) {
+    CUSTOM = list;
+    byId = {};
+    tasks().forEach(function (i) { byId[i.id] = i; });
+    Object.keys(taskEls).forEach(function (id) {
+      if (id.indexOf("x-") === 0 && !byId[id]) { taskEls[id].li.remove(); delete taskEls[id]; }
+    });
+    CUSTOM.forEach(function (iss) {
+      if (taskEls[iss.id]) return;
+      var stop = stopEls.filter(function (s) { return s.sp.n === iss.s; })[0];
+      if (stop) stop.list.insertBefore(buildTask(iss), stop.empty);
+    });
+  }
+
   function loadIssues() {
     var all = [];
     function page(n) {
@@ -594,9 +714,10 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     if (!gl.token || gl.loading) return Promise.resolve();
     gl.loading = true;
     renderConn();
-    return Promise.all([gl.me ? Promise.resolve(gl.me) : api("GET", "/user"), loadIssues()])
+    return Promise.all([gl.me ? Promise.resolve(gl.me) : api("GET", "/user"), loadIssues(), loadCustom()])
       .then(function (res) {
         gl.me = res[0];
+        if (res[2]) setCustom(res[2]);
         gl.byTitle = {};
         res[1].forEach(keep);
         gl.loaded = true;
@@ -654,11 +775,12 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   }
 
   function issueText(iss) {
+    var label = LABELS[iss.label] || iss.label;
+    var ac = iss.ac.length ? "## Acceptance Criteria\n" + iss.ac.map(function (a) { return "- [ ] " + a; }).join("\n") + "\n\n" : "";
+    var tail = (label ? "/label ~" + label + "\n" : "") + "/milestone %\"Sprint " + iss.s + "\"\n/weight " + iss.w + "\n/assign me";
+    if (iss.custom) return (iss.how ? iss.how + "\n\n" : "") + ac + tail;
     var deps = iss.deps.length ? iss.deps.map(function (d) { return byId[d].t; }).join(", ") : "keine";
-    return "**Abhängig von:** " + deps + "  \n**Ohne Warten:** " + iss.how +
-      "\n\n## Acceptance Criteria\n" + iss.ac.map(function (a) { return "- [ ] " + a; }).join("\n") +
-      "\n\n/label ~" + (LABELS[iss.label] || iss.label) +
-      "\n/milestone %\"Sprint " + iss.s + "\"\n/weight " + iss.w + "\n/assign me";
+    return "**Abhängig von:** " + deps + "  \n**Ohne Warten:** " + iss.how + "\n\n" + ac + tail;
   }
   function newIssueUrl(iss) {
     return GITLAB_PROJECT + "/-/issues/new?issue%5Btitle%5D=" + encodeURIComponent(iss.t) +
@@ -700,7 +822,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   }
 
   /* ---------- header ---------- */
-  document.getElementById("meta-count").textContent = ISSUES.length + " Issues in " + SPRINTS.length + " Sprints";
+
   (function () {
     var wd = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"][today.getDay()];
     var sub;
@@ -869,7 +991,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     list.appendChild(empty);
     li.appendChild(list);
     routeEl.appendChild(li);
-    stopEls.push({ sp: sp, li: li, status: status, pc: pc, fill: fill, empty: empty });
+    stopEls.push({ sp: sp, li: li, list: list, status: status, pc: pc, fill: fill, empty: empty });
   });
 
   routeEl.appendChild(milestone("Ziel", "Projektende und Präsentation", "21.12.2026",
@@ -894,6 +1016,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     main.appendChild(el("h3", "task-title", iss.t));
     var meta = el("div", "meta");
     meta.appendChild(el("span", "who", PEOPLE[iss.p].short));
+    if (iss.custom) meta.appendChild(el("span", "extra-badge", "Zusatz"));
     meta.appendChild(el("span", "weight", "Weight " + iss.w));
     var glState = el("span", "gl-state");
     meta.appendChild(glState);
@@ -947,6 +1070,25 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     });
     tools.appendChild(find);
     tools.appendChild(copy);
+    if (iss.custom) {
+      var rm = el("button", "tool danger", "Aus dem Plan entfernen");
+      var rmYes = el("button", "tool danger", "Ja, aus dem Plan entfernen");
+      var rmNo = el("button", "tool", "Abbrechen");
+      rm.type = rmYes.type = rmNo.type = "button";
+      rmYes.hidden = rmNo.hidden = true;
+      rm.addEventListener("click", function () { rm.hidden = true; rmYes.hidden = rmNo.hidden = false; rmYes.focus(); });
+      rmNo.addEventListener("click", function () { rm.hidden = false; rmYes.hidden = rmNo.hidden = true; rm.focus(); });
+      rmYes.addEventListener("click", function () {
+        if (!gl.token || !gl.loaded) { toast("Erst mit GitLab verbinden."); return; }
+        rmYes.disabled = true;
+        saveCustom(function (list) { return list.filter(function (x) { return x.id !== iss.id; }); })
+          .then(function () { toast("Aus dem Plan entfernt. Ein schon erstelltes GitLab-Issue bleibt bestehen."); })
+          .catch(function (err) { toast(errText(err)); rmYes.disabled = false; });
+      });
+      tools.appendChild(rm);
+      tools.appendChild(rmYes);
+      tools.appendChild(rmNo);
+    }
     detail.appendChild(tools);
 
     var depBox = el("div");
@@ -968,8 +1110,8 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     detail.appendChild(depBox);
 
     var tipBox = el("div");
-    tipBox.appendChild(el("h4", null, "Ohne zu warten"));
-    tipBox.appendChild(el("p", "tip", iss.how));
+    tipBox.appendChild(el("h4", null, iss.custom ? "Beschreibung" : "Ohne zu warten"));
+    tipBox.appendChild(el("p", "tip", iss.how || "Keine Beschreibung."));
     detail.appendChild(tipBox);
 
     var acBox = el("div");
@@ -1014,8 +1156,8 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     t.acKey = key;
     t.acHead.textContent = g ? "Acceptance Criteria (aus GitLab #" + g.iid + ")" : "Acceptance Criteria";
     t.acList.textContent = "";
-    if (g && !items.length) {
-      t.acList.appendChild(el("li", "none", "Im GitLab-Issue steht keine Checkliste."));
+    if (!items.length) {
+      t.acList.appendChild(el("li", "none", g ? "Im GitLab-Issue steht keine Checkliste." : "Keine Kriterien angegeben."));
       return items;
     }
     items.forEach(function (item, idx) {
@@ -1071,9 +1213,10 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
   /* ---------- render ---------- */
   function update() {
     var f = prefs.filter;
+    document.getElementById("meta-count").textContent = tasks().length + " Issues in " + SPRINTS.length + " Sprints";
     var connected = !!(gl.token && gl.loaded);
 
-    ISSUES.forEach(function (iss) {
+    tasks().forEach(function (iss) {
       var t = taskEls[iss.id];
       var g = issueOf(iss);
       var done = isDone(iss);
@@ -1128,7 +1271,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     });
 
     stopEls.forEach(function (s) {
-      var items = ISSUES.filter(function (i) { return i.s === s.sp.n && (f === "all" || i.p === f); });
+      var items = tasks().filter(function (i) { return i.s === s.sp.n && (f === "all" || i.p === f); });
       var doneN = items.filter(isDone).length;
       var visible = items.filter(function (i) { return !taskEls[i.id].li.hidden; }).length;
       var complete = items.length > 0 && doneN === items.length;
@@ -1150,7 +1293,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
     /* Person cards count what each person actually finished in GitLab, against what was planned for them. */
     var doneBy = { L: [], D: [], M: [] };
     if (connected) {
-      ISSUES.forEach(function (iss) {
+      tasks().forEach(function (iss) {
         var g = issueOf(iss);
         if (!g || g.state !== "closed") return;
         var doer = doerOf(g), p = doer && GL_USERS[doer.username];
@@ -1158,7 +1301,7 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       });
     }
     Object.keys(PEOPLE).forEach(function (p) {
-      var planned = ISSUES.filter(function (i) { return i.p === p; });
+      var planned = tasks().filter(function (i) { return i.p === p; });
       var pw = planned.reduce(function (a, i) { return a + i.w; }, 0);
       var dw = doneBy[p].reduce(function (a, i) { return a + i.w; }, 0);
       var e = personEls[p];
@@ -1177,9 +1320,9 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       e.btn.setAttribute("aria-pressed", String(f === p));
     });
 
-    var addedN = connected ? ISSUES.filter(function (i) { return !!issueOf(i); }).length : 0;
+    var addedN = connected ? tasks().filter(function (i) { return !!issueOf(i); }).length : 0;
     document.getElementById("cnt-added").textContent = connected ? String(addedN) : "";
-    document.getElementById("cnt-missing").textContent = connected ? String(ISSUES.length - addedN) : "";
+    document.getElementById("cnt-missing").textContent = connected ? String(tasks().length - addedN) : "";
     segButtons.forEach(function (btn) {
       var on = (connected ? prefs.gl : "all") === btn.dataset.gl;
       btn.setAttribute("aria-pressed", String(on));
@@ -1199,6 +1342,70 @@ code { font-family: var(--mono); font-size: .86em; background: var(--aqua-soft);
       note.appendChild(all);
     }
   }
+
+  /* ---------- new task form ---------- */
+  var ntOpen = document.getElementById("nt-open"), ntForm = document.getElementById("new-task");
+  var ntTitle = document.getElementById("nt-title"), ntDesc = document.getElementById("nt-desc"), ntAc = document.getElementById("nt-ac");
+  var ntSprint = document.getElementById("nt-sprint"), ntPerson = document.getElementById("nt-person");
+  var ntLabel = document.getElementById("nt-label"), ntWeight = document.getElementById("nt-weight");
+  var ntError = document.getElementById("nt-error"), ntSave = document.getElementById("nt-save"), ntGitlab = document.getElementById("nt-gitlab");
+  document.getElementById("nt-wiki").href = GITLAB_PROJECT + "/-/wikis/" + WIKI_SLUG;
+  function option(sel, value, text) { var o = el("option", null, text); o.value = String(value); sel.appendChild(o); }
+  SPRINTS.forEach(function (sp) { option(ntSprint, sp.n, sp.n + " – bis " + fmt(sp.to)); });
+  Object.keys(PEOPLE).forEach(function (p) { option(ntPerson, p, PEOPLE[p].short); });
+  LABEL_CHOICES.forEach(function (l) { option(ntLabel, l, l); });
+  WEIGHTS.forEach(function (w) { option(ntWeight, w, String(w)); });
+  function resetForm() {
+    ntTitle.value = ntDesc.value = ntAc.value = "";
+    var now = SPRINTS.filter(function (s) { return sprintState(s) === "now"; })[0];
+    ntSprint.value = String(now ? now.n : 1);
+    var mine = gl.me && GL_USERS[gl.me.username];
+    ntPerson.value = mine || "L";
+    ntLabel.value = "bug";
+    ntWeight.value = "2";
+    ntError.hidden = true;
+  }
+  function showForm(open) {
+    ntForm.hidden = !open;
+    ntOpen.setAttribute("aria-expanded", String(open));
+    if (open) { resetForm(); ntTitle.focus(); }
+  }
+  function formError(msg) { ntError.textContent = msg; ntError.hidden = false; }
+  function readForm() {
+    var title = ntTitle.value.trim();
+    if (!title) { formError("Bitte einen Titel eingeben."); ntTitle.focus(); return null; }
+    return {
+      id: "x-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      custom: true, t: title.slice(0, 200), how: ntDesc.value.trim().slice(0, 2000),
+      ac: ntAc.value.split("\n").map(function (a) { return a.trim(); }).filter(Boolean).slice(0, 20),
+      s: +ntSprint.value, p: ntPerson.value, label: ntLabel.value, w: +ntWeight.value, deps: [],
+      by: gl.me ? gl.me.username : "", at: new Date().toISOString()
+    };
+  }
+  ntOpen.addEventListener("click", function () { showForm(ntForm.hidden); });
+  document.getElementById("nt-cancel").addEventListener("click", function () { showForm(false); ntOpen.focus(); });
+  ntGitlab.addEventListener("click", function () {
+    var item = readForm();
+    if (!item) return;
+    var w = window.open(newIssueUrl(item), "_blank", "noopener");
+    if (!w) location.href = newIssueUrl(item);
+  });
+  ntForm.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (!gl.token || !gl.loaded) { formError("Zum Speichern im Plan zuerst mit GitLab verbinden. „Nur in GitLab erstellen“ geht auch ohne Verbindung."); return; }
+    var item = readForm();
+    if (!item) return;
+    ntSave.disabled = ntGitlab.disabled = true;
+    ntError.hidden = true;
+    saveCustom(function (list) { return list.concat([item]); })
+      .then(function () {
+        showForm(false);
+        toast("Aufgabe hinzugefügt – alle sehen sie jetzt im Plan.");
+        jumpTo(item.id);
+      })
+      .catch(function (err) { formError(errText(err)); })
+      .then(function () { ntSave.disabled = ntGitlab.disabled = false; });
+  });
 
   update();
   renderConn();

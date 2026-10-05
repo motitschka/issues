@@ -28,6 +28,14 @@ Die Häkchen werden nicht im Browser gespeichert, sondern direkt in GitLab:
 
 **Verbinden:** Jede Person erstellt einmal einen eigenen [Personal Access Token](https://gitlab.com/-/user_settings/personal_access_tokens?name=Geoguesser%20Sprintplan&scopes=api) mit Scope `api` und Ablaufdatum spätestens 21.12.2026 und fügt ihn auf der Seite ein. Der Token bleibt im Browser und geht nur an gitlab.com; „Trennen“ löscht ihn. Ohne Token zeigt die Seite nur den Plan.
 
+## Neue Aufgaben
+
+Mit **Neue Aufgabe** lassen sich Bugs und Aufgaben ergänzen, die nicht im Plan stehen (Titel, Beschreibung, Acceptance Criteria, Sprint, Person, Label, Weight).
+
+- **Zum Plan hinzufügen** speichert die Aufgabe für alle auf der GitLab-Wiki-Seite [Sprintplan-Zusatzaufgaben](https://gitlab.com/htl-villach/it/classes/4ahitm-2026/itp/waent/project1/SJ26_27_4AHITM_ITPriepanl2_project1/-/wikis/Sprintplan-Zusatzaufgaben). Sie erscheint in ihrem Sprint mit dem Hinweis „Zusatz“ und einem eigenen „Issue erstellen“-Button. Dafür muss man mit GitLab verbunden sein.
+- **Nur in GitLab erstellen** öffnet direkt ein vorausgefülltes GitLab-Issue, ohne die Aufgabe im Plan zu speichern – auch ohne Verbindung.
+- **Aus dem Plan entfernen** (in den Details einer Zusatzaufgabe) löscht nur den Planeintrag, nicht ein schon erstelltes GitLab-Issue.
+
 ## Inhalt ändern
 
 Die Issues stehen als JSON direkt in `index.html` (`<script id="issues-data">`). Pro Issue: `id`, Person (`L`, `D`, `M`), Label, Weight (`w`), Sprint (`s`), Titel (`t`), Abhängigkeiten (`deps`, als IDs), Hinweis (`how`) und Acceptance Criteria (`ac`). Häkchen hängen an der `id` – beim Umbenennen eines Titels bleiben sie erhalten, beim Ändern der `id` nicht.
